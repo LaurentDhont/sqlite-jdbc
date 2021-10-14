@@ -74,7 +74,22 @@ public class JDBC implements Driver {
 
     /** @see java.sql.Driver#connect(java.lang.String, java.util.Properties) */
     public Connection connect(String url, Properties info) throws SQLException {
-        return createConnection(url, info);
+        Connection conn = createConnection(url, info);
+
+        Function.create(conn, "REGEXP", new Function() {
+            @Override
+            protected void xFunc() throws SQLException {
+                String expression = value_text(0);
+                String value = value_text(1);
+                if (value == null)
+                    value = "";
+
+                Pattern pattern=Pattern.compile(expression);
+                result(pattern.matcher(value).find() ? 1 : 0);
+            }
+        });
+
+        return conn;
     }
 
     /**
